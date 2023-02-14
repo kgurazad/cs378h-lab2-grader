@@ -5,10 +5,10 @@ import sys
 import argparse
 
 ap = argparse.ArgumentParser()
-ap.add_argument('bst')
-ap.add_argument('-s', '--hash', action='store_true')
-ap.add_argument('-c', '--comp', action='store_true')
-ap.add_argument('-n', '--num_iter')
+ap.add_argument('bst', help='path to BST executable')
+ap.add_argument('-s', '--hash', action='store_true', help='pass this flag to test hash')
+ap.add_argument('-c', '--comp', action='store_true', help='pass this flag to test comp')
+ap.add_argument('-n', '--num_iter', help='number of times each test runs')
 args = ap.parse_args()
 
 bst = args.bst
@@ -24,7 +24,7 @@ def hash_f(fname, i):
     num_passes = 0
     for j in range(0, num_iter):
         os.system('rm hash_out hash_out2 > /dev/null 2> /dev/null')
-        os.system(f'{bst} -hash-workers={i} -comp-workers=1 -input={fname}.txt | grep ":" | grep -v group | sort > hash_out')
+        os.system(f'{bst} -hash-workers={i} -data-workers=1 -comp-workers=1 -input={fname}.txt | grep ":" | grep -v group | sort > hash_out')
         with open('hash_out', 'r') as f:
             with open('hash_out2', 'w') as f2:
                 for line in f:
@@ -61,7 +61,7 @@ def comp_f(fname, i):
     num_passes = 0
     for j in range(0, num_iter):
         os.system('rm comp_out comp_out2 > /dev/null 2> /dev/null')
-        os.system(f'{bst} -hash-workers=1 -comp-workers={i} -input={fname}.txt | grep "^group " | sort > comp_out')
+        os.system(f'{bst} -hash-workers=1 -data-workers=1 -comp-workers={i} -input={fname}.txt | grep "^group " | sort > comp_out')
         with open('comp_out', 'r') as f:
             with open('comp_out2', 'w') as f2:
                 for line in f:
@@ -90,6 +90,6 @@ if args.comp:
         num_passes = comp_f('coarse', i)
         print(f'coarse.txt -comp-workers={i} passes {num_passes} of {num_iter}')
 
-    for i in [1, 2, 4, 8, 16, 32, 64, 128]:
+    for i in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 65536, 131072]: # test fine.txt hashing
         num_passes = comp_f('fine', i)
         print(f'fine.txt -comp-workers={i} passes {num_passes} of {num_iter}')
