@@ -21,6 +21,7 @@ if not os.path.isfile(bst):
     sys.exit(1)
 
 def hash_f(fname, i):
+    os.system(f'sort -o {fname}.hash {fname}.hash')
     num_passes = 0
     for j in range(0, num_iter):
         os.system('rm hash_out hash_out2 > /dev/null 2> /dev/null')
@@ -59,6 +60,7 @@ if args.hash:
 
 def comp_f(fname, i):
     num_passes = 0
+    os.system(f'sort -o {fname}.comp {fname}.comp')
     for j in range(0, num_iter):
         os.system('rm comp_out comp_out2 > /dev/null 2> /dev/null')
         os.system(f'{bst} -hash-workers=1 -data-workers=1 -comp-workers={i} -input={fname}.txt | grep "^group " | sort > comp_out')
