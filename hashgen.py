@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
 for t in ['simple', 'coarse', 'fine']:
-    with open(f'{t}.ref', 'r') as f:
-        with open(f'{t}.ref2', 'w') as f2:
+    with open(f'{t}.hash', 'r') as f:
+        with open(f'{t}.hash2', 'w') as f2:
             for line in f:
                 line = line.split()
                 tree_ids = sorted(line[1:])

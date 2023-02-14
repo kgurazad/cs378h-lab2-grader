@@ -24,7 +24,7 @@ def hash_f(fname, i):
     num_passes = 0
     for j in range(0, num_iter):
         os.system('rm hash_out hash_out2 > /dev/null 2> /dev/null')
-        os.system(f'{bst} -hash-workers={i} -data-workers=1 -comp-workers=1 -input={fname}.txt | grep ":" | grep -v group | sort > hash_out')
+        os.system(f'{bst} -hash-workers={i} -data-workers=1 -comp-workers=1 -input={fname}.txt | grep ":" | grep -v group | grep -v Time | sort > hash_out')
         with open('hash_out', 'r') as f:
             with open('hash_out2', 'w') as f2:
                 for line in f:
