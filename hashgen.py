@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import os
+
 for t in ['simple', 'coarse', 'fine']:
     with open(f'{t}.hash', 'r') as f:
         with open(f'{t}.hash2', 'w') as f2:
@@ -13,4 +15,4 @@ for t in ['simple', 'coarse', 'fine']:
                 print(print_to_f2)
                 print_to_f2 += "\n"
                 f2.write(print_to_f2)
-                
+    os.system(f'sort -o {t}.hash2 {t}.hash2')
