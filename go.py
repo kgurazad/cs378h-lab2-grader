@@ -84,7 +84,7 @@ def comp_f(fname, i):
 
 if args.comp:
     print(f'testing comp...')
-    for i in range(0, 13):
+    for i in range(1, 13):
         num_passes = comp_f('simple', i)
         print(f'simple.txt -comp-workers={i} passes {num_passes} of {num_iter}')
 
