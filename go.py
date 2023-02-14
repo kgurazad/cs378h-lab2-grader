@@ -2,20 +2,29 @@
 
 import os
 import sys
+import argparse
 
-bst = sys.argv[1]
+ap = argparse.ArgumentParser()
+ap.add_argument('bst')
+ap.add_argument('-s', '--hash', action='store_true')
+ap.add_argument('-c', '--comp', action='store_true')
+ap.add_argument('-n', '--num_iter')
+args = ap.parse_args()
+
+bst = args.bst
+num_iter = args.num_iter
+if num_iter is None:
+    num_iter = 10
+
 if not os.path.isfile(bst):
     print("BST executable not found--please pass it as an argument")
     sys.exit(1)
 
-num_iter = os.getenv('NUM_ITER', 10)
-print(f'num_iter is {num_iter}')
-
-def test_f(fname):
+def hash_f(fname, i):
     num_passes = 0
     for j in range(0, num_iter):
         os.system('rm hash_out hash_out2 > /dev/null 2> /dev/null')
-        os.system(f'{bst} -hash-workers={i} -input={fname}.txt | grep -v hashGroupTime | sort > hash_out')
+        os.system(f'{bst} -hash-workers={i} -comp-workers=1 -input={fname}.txt | grep ":" | grep -v group | sort > hash_out')
         with open('hash_out', 'r') as f:
             with open('hash_out2', 'w') as f2:
                 for line in f:
@@ -28,19 +37,59 @@ def test_f(fname):
                     print_to_f2 += "\n"
                     f2.write(print_to_f2)
             
-        are_they_different = os.system(f'cmp hash_out2 {fname}.ref > /dev/null 2> /dev/null')
+        are_they_different = os.system(f'cmp hash_out2 {fname}.hash > /dev/null 2> /dev/null')
         if are_they_different == 0:
             num_passes = num_passes + 1
     return num_passes
-            
-for i in range(0, 13): # test simple.txt hashing
-    num_passes = test_f('simple')
-    print(f'simple.txt -hash-workers={i} passes {num_passes} of {num_iter}')
 
-for i in [1, 2, 4, 8, 16, 32, 64, 128]: # test coarse.txt hashing
-    num_passes = test_f('coarse')
-    print(f'coarse.txt -hash-workers={i} passes {num_passes} of {num_iter}')
+if args.hash:
+    print(f'testing hash...')
     
-for i in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 65536, 131072]: # test fine.txt hashing
-    num_passes = test_f('fine')
-    print(f'fine.txt -hash-workers={i} passes {num_passes} of {num_iter}')
+    for i in range(1, 13): # test simple.txt hashing
+        num_passes = hash_f('simple', i)
+        print(f'simple.txt -hash-workers={i} passes {num_passes} of {num_iter}')
+        
+    for i in [1, 2, 4, 8, 16, 32, 64, 128]: # test coarse.txt hashing
+        num_passes = hash_f('coarse', i)
+        print(f'coarse.txt -hash-workers={i} passes {num_passes} of {num_iter}')
+            
+    for i in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 65536, 131072]: # test fine.txt hashing
+        num_passes = hash_f('fine', i)
+        print(f'fine.txt -hash-workers={i} passes {num_passes} of {num_iter}')
+
+def comp_f(fname, i):
+    num_passes = 0
+    for j in range(0, num_iter):
+        os.system('rm comp_out comp_out2 > /dev/null 2> /dev/null')
+        os.system(f'{bst} -hash-workers=1 -comp-workers={i} -input={fname}.txt | grep "^group " | sort > comp_out')
+        with open('comp_out', 'r') as f:
+            with open('comp_out2', 'w') as f2:
+                for line in f:
+                    line = line.split()
+                    tree_ids = sorted(line[2:])
+                    print_to_f2 = ""
+                    for tree_id in tree_ids:
+                        print_to_f2 += " "
+                        print_to_f2 += tree_id
+                    print_to_f2 += "\n"
+                    f2.write(print_to_f2)
+        os.system(f'sort -o comp_out2 comp_out2')
+        are_they_different = os.system(f'cmp comp_out2 {fname}.comp > /dev/null 2> /dev/null')
+        if are_they_different == 0:
+            num_passes = num_passes + 1
+    return num_passes
+
+
+if args.comp:
+    print(f'testing comp...')
+    for i in range(0, 13):
+        num_passes = comp_f('simple', i)
+        print(f'simple.txt -comp-workers={i} passes {num_passes} of {num_iter}')
+
+    for i in [1, 2, 4, 8, 16, 32, 64, 128]:
+        num_passes = comp_f('coarse', i)
+        print(f'coarse.txt -comp-workers={i} passes {num_passes} of {num_iter}')
+
+    for i in [1, 2, 4, 8, 16, 32, 64, 128]:
+        num_passes = comp_f('fine', i)
+        print(f'fine.txt -comp-workers={i} passes {num_passes} of {num_iter}')
