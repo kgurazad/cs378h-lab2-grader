@@ -15,7 +15,9 @@ bst = args.bst
 num_iter = args.num_iter
 if num_iter is None:
     num_iter = 10
-
+else:
+    num_iter = int(num_iter)
+    
 if not os.path.isfile(bst):
     print("BST executable not found--please pass it as an argument")
     sys.exit(1)
